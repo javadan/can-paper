@@ -1,0 +1,234 @@
+{
+  "suites": [
+    {
+      "id": "overnight_megatune_STANDARD_ema_attractor_h120_t30_ex8_verifyStandard",
+      "description": "Phase A -> Megatune PhaseBC (Standard). Verify using TUNED parameters and TUNED horizon.",
+      "seed": 42,
+      "steps": [
+        {
+          "id": "01_phaseA_tune",
+          "mode": "tune-phaseA",
+          "args": ["--tune.seed=42", "--tune.phaseA.maxSteps=2500"]
+        },
+        {
+          "id": "02_phaseA_snapshot",
+          "mode": "finetune-phaseA",
+          "args": [
+            "--finetune.seed=42",
+            "--finetune.phaseA.targetAcc=1.00",
+            "--finetune.phaseA.maxSteps=25000",
+            "--finetune.phaseA.writePhaseABest=true"
+          ]
+        },
+        {
+          "id": "03_megatune",
+          "mode": "megatune-phaseBC",
+          "args": [
+            "--megatune.id=standard-ema-attractor-h120-t30-ex8",
+            "--megatune.outDir=artifacts/megatune/standard-ema-attractor-h120-t30-ex8",
+            "--megatune.topologies=snake,ring",
+            "--megatune.seed=42",
+            "--megatune.constraints.allowImpulse=false",
+            "--megatune.constraints.forceLearnEqEval=true",
+            "--megatune.constraints.minAcc=0.15",
+            "--megatune.constraints.maxCollapseFrac=0.7",
+            "--megatune.search.activityModes=ema_spike",
+            "--megatune.search.activityAlphas=0.06,0.08,0.1,0.12,0.15,0.2",
+            "--megatune.search.tTrans=120",
+            "--megatune.search.tailLen=30",
+            "--megatune.search.evalWindows=lateNoImpulse",
+            "--megatune.search.settleWindows=late",
+            "--megatune.search.excludeFirstK=8",
+            "--megatune.wAcc=0.9",
+            "--megatune.wSustain=3.0",
+            "--megatune.wCollapse=1.5",
+            "--megatune.guardrail.trials=120",
+            "--megatune.stage1.maxCandidates=450",
+            "--megatune.stage1.trials=240",
+            "--megatune.stage1.topK=35",
+            "--megatune.stage2.maxSemantics=90",
+            "--megatune.stage2.trials=260",
+            "--megatune.stage2.topK=18",
+            "--megatune.stage3.maxBgConfigs=0",
+            "--megatune.stage3.trials=0",
+            "--megatune.stage3.topK=0",
+            "--megatune.stage4.enabled=false"
+          ]
+        },
+        {
+          "id": "04_probe_bc_verify",
+          "mode": "probe-phaseBC",
+          "args": [
+            "--controller.mode=standard",
+            "--phaseBC.physicsSource=megatune_best",
+            "--probe.maxCandidates=380",
+            "--probe.trials=1600",
+            "--probe.rankTop=40",
+            "--probe.wSustain=8",
+            "--probe.wAcc=6"
+          ]
+        },
+        {
+          "id": "05_run_bc_snake_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "06_run_bc_ring_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "07_report",
+          "mode": "report",
+          "args": [
+            "--report.includeProbe=true",
+            "--report.includeRun=true",
+            "--report.probeTopK=40"
+          ]
+        },
+        {
+          "id": "08_trace_transitions",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=standard",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=120",
+            "--phaseBC.taillen=30",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overnight_megatune_BG_ema_attractor_h120_t30_ex8_verifyBG",
+      "description": "Phase A -> Megatune PhaseBC (BG). Verify using TUNED parameters and TUNED horizon.",
+      "seed": 42,
+      "steps": [
+        {
+          "id": "01_phaseA_tune",
+          "mode": "tune-phaseA",
+          "args": ["--tune.seed=42", "--tune.phaseA.maxSteps=2500"]
+        },
+        {
+          "id": "02_phaseA_snapshot",
+          "mode": "finetune-phaseA",
+          "args": [
+            "--finetune.seed=42",
+            "--finetune.phaseA.targetAcc=1.00",
+            "--finetune.phaseA.maxSteps=25000",
+            "--finetune.phaseA.writePhaseABest=true"
+          ]
+        },
+        {
+          "id": "03_megatune",
+          "mode": "megatune-phaseBC",
+          "args": [
+            "--megatune.id=bg-ema-attractor-h120-t30-ex8",
+            "--megatune.outDir=artifacts/megatune/bg-ema-attractor-h120-t30-ex8",
+            "--megatune.topologies=snake,ring",
+            "--megatune.seed=42",
+            "--megatune.constraints.allowImpulse=false",
+            "--megatune.constraints.forceLearnEqEval=true",
+            "--megatune.constraints.minAcc=0.15",
+            "--megatune.constraints.maxCollapseFrac=0.7",
+            "--megatune.search.activityModes=ema_spike",
+            "--megatune.search.activityAlphas=0.06,0.08,0.1,0.12,0.15,0.2",
+            "--megatune.search.tTrans=120",
+            "--megatune.search.tailLen=30",
+            "--megatune.search.evalWindows=lateNoImpulse",
+            "--megatune.search.settleWindows=late",
+            "--megatune.search.excludeFirstK=8",
+            "--megatune.search.bg.epsilons=0.01,0.02,0.05,0.1",
+            "--megatune.search.bg.temperatures=0.8,0.9,1.0,1.2,1.4",
+            "--megatune.search.bg.waitSteps=2,5,10,20",
+            "--megatune.search.bg.sampleActions=true,false",
+            "--megatune.wAcc=0.9",
+            "--megatune.wSustain=3.0",
+            "--megatune.wCollapse=1.5",
+            "--megatune.guardrail.trials=120",
+            "--megatune.stage1.maxCandidates=450",
+            "--megatune.stage1.trials=240",
+            "--megatune.stage1.topK=35",
+            "--megatune.stage2.maxSemantics=90",
+            "--megatune.stage2.trials=260",
+            "--megatune.stage2.topK=18",
+            "--megatune.stage3.maxBgConfigs=120",
+            "--megatune.stage3.trials=280",
+            "--megatune.stage3.topK=12",
+            "--megatune.stage4.enabled=false"
+          ]
+        },
+        {
+          "id": "04_probe_bc_verify",
+          "mode": "probe-phaseBC",
+          "args": [
+            "--controller.mode=bg",
+            "--phaseBC.physicsSource=megatune_best",
+            "--probe.maxCandidates=380",
+            "--probe.trials=1600",
+            "--probe.rankTop=40",
+            "--probe.wSustain=8",
+            "--probe.wAcc=6"
+          ]
+        },
+        {
+          "id": "05_run_bc_snake_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "06_run_bc_ring_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "07_report",
+          "mode": "report",
+          "args": [
+            "--report.includeProbe=true",
+            "--report.includeRun=true",
+            "--report.probeTopK=40"
+          ]
+        },
+        {
+          "id": "08_trace_transitions",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=bg",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=120",
+            "--phaseBC.taillen=30",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50"
+          ]
+        }
+      ]
+    }
+  ]
+}
