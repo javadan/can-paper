@@ -1,0 +1,446 @@
+{
+  "suites": [
+    {
+      "id": "overnight_megatune_STANDARD_ema_impulse_h40_t10_ex8_verifyStandard",
+      "description": "Phase A -> Megatune PhaseBC (Standard). Allow impulse categorization with mean window + tail settle, using tTrans=40/tailLen=10. Includes transition trace plots.",
+      "seed": 42,
+      "steps": [
+        {
+          "id": "01_phaseA_tune",
+          "mode": "tune-phaseA",
+          "args": [
+            "--tune.seed=42",
+            "--tune.phaseA.maxSteps=2500"
+          ]
+        },
+        {
+          "id": "02_phaseA_snapshot",
+          "mode": "finetune-phaseA",
+          "args": [
+            "--finetune.seed=42",
+            "--finetune.phaseA.targetAcc=1.00",
+            "--finetune.phaseA.maxSteps=25000",
+            "--finetune.phaseA.writePhaseABest=true"
+          ]
+        },
+        {
+          "id": "03_megatune",
+          "mode": "megatune-phaseBC",
+          "args": [
+            "--megatune.id=standard-ema-impulse-h40-t10-ex8",
+            "--megatune.outDir=artifacts/megatune/standard-ema-impulse-h40-t10-ex8",
+            "--megatune.topologies=snake,ring",
+            "--megatune.seed=42",
+            "--megatune.constraints.allowImpulse=true",
+            "--megatune.constraints.forceLearnEqEval=true",
+            "--megatune.constraints.minAcc=0.15",
+            "--megatune.constraints.maxCollapseFrac=0.7",
+            "--megatune.search.activityModes=ema_spike",
+            "--megatune.search.activityAlphas=0.06,0.08,0.1,0.12,0.15,0.2",
+            "--megatune.search.tTrans=40",
+            "--megatune.search.tailLen=10",
+            "--megatune.search.evalWindows=mean",
+            "--megatune.search.settleWindows=tail",
+            "--megatune.search.excludeFirstK=0",
+            "--megatune.wAcc=0.9",
+            "--megatune.wSustain=3.0",
+            "--megatune.wCollapse=1.5",
+            "--megatune.guardrail.trials=120",
+            "--megatune.stage1.maxCandidates=450",
+            "--megatune.stage1.trials=240",
+            "--megatune.stage1.topK=35",
+            "--megatune.stage2.maxSemantics=90",
+            "--megatune.stage2.trials=260",
+            "--megatune.stage2.topK=18",
+            "--megatune.stage3.maxBgConfigs=0",
+            "--megatune.stage3.trials=0",
+            "--megatune.stage3.topK=0",
+            "--megatune.stage4.enabled=false"
+          ]
+        },
+        {
+          "id": "04_probe_bc_verify",
+          "mode": "probe-phaseBC",
+          "args": [
+            "--controller.mode=standard",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--probe.maxCandidates=380",
+            "--probe.trials=1600",
+            "--probe.rankTop=40",
+            "--probe.wSustain=8",
+            "--probe.wAcc=6"
+          ]
+        },
+        {
+          "id": "05_run_bc_snake_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "06_run_bc_ring_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "07_run_bc_snake_bidir_from_scratch_walk",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        },
+        {
+          "id": "08_run_bc_ring_bidir_from_scratch_walk",
+          "mode": "run",
+          "args": [
+            "--controller.mode=standard",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        },
+        {
+          "id": "09_report",
+          "mode": "report",
+          "args": [
+            "--report.includeProbe=true",
+            "--report.includeRun=true",
+            "--report.probeTopK=40"
+          ]
+        },
+        {
+          "id": "10_trace_transitions",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=standard",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50"
+          ]
+        },
+        {
+          "id": "11_trace_transitions_bidir_from_scratch_walk",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=standard",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overnight_megatune_BG_ema_impulse_h40_t10_ex8_verifyBG",
+      "description": "Phase A -> Megatune PhaseBC (BG). Allow impulse categorization with mean window + tail settle, using tTrans=40/tailLen=10. Includes transition trace plots.",
+      "seed": 42,
+      "steps": [
+        {
+          "id": "01_phaseA_tune",
+          "mode": "tune-phaseA",
+          "args": [
+            "--tune.seed=42",
+            "--tune.phaseA.maxSteps=2500"
+          ]
+        },
+        {
+          "id": "02_phaseA_snapshot",
+          "mode": "finetune-phaseA",
+          "args": [
+            "--finetune.seed=42",
+            "--finetune.phaseA.targetAcc=1.00",
+            "--finetune.phaseA.maxSteps=25000",
+            "--finetune.phaseA.writePhaseABest=true"
+          ]
+        },
+        {
+          "id": "03_megatune",
+          "mode": "megatune-phaseBC",
+          "args": [
+            "--megatune.id=bg-ema-impulse-h40-t10-ex8",
+            "--megatune.outDir=artifacts/megatune/bg-ema-impulse-h40-t10-ex8",
+            "--megatune.topologies=snake,ring",
+            "--megatune.seed=42",
+            "--megatune.constraints.allowImpulse=true",
+            "--megatune.constraints.forceLearnEqEval=true",
+            "--megatune.constraints.minAcc=0.15",
+            "--megatune.constraints.maxCollapseFrac=0.7",
+            "--megatune.search.activityModes=ema_spike",
+            "--megatune.search.activityAlphas=0.06,0.08,0.1,0.12,0.15,0.2",
+            "--megatune.search.tTrans=40",
+            "--megatune.search.tailLen=10",
+            "--megatune.search.evalWindows=mean",
+            "--megatune.search.settleWindows=tail",
+            "--megatune.search.excludeFirstK=0",
+            "--megatune.search.bg.epsilons=0.01,0.02,0.05,0.1",
+            "--megatune.search.bg.temperatures=0.8,0.9,1.0,1.2,1.4",
+            "--megatune.search.bg.waitSteps=2,5,10,20",
+            "--megatune.search.bg.sampleActions=true,false",
+            "--megatune.wAcc=0.9",
+            "--megatune.wSustain=3.0",
+            "--megatune.wCollapse=1.5",
+            "--megatune.guardrail.trials=120",
+            "--megatune.stage1.maxCandidates=450",
+            "--megatune.stage1.trials=240",
+            "--megatune.stage1.topK=35",
+            "--megatune.stage2.maxSemantics=90",
+            "--megatune.stage2.trials=260",
+            "--megatune.stage2.topK=18",
+            "--megatune.stage3.maxBgConfigs=120",
+            "--megatune.stage3.trials=280",
+            "--megatune.stage3.topK=12",
+            "--megatune.stage4.enabled=false"
+          ]
+        },
+        {
+          "id": "04_probe_bc_verify",
+          "mode": "probe-phaseBC",
+          "args": [
+            "--controller.mode=bg",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--probe.maxCandidates=380",
+            "--probe.trials=1600",
+            "--probe.rankTop=40",
+            "--probe.wSustain=8",
+            "--probe.wAcc=6"
+          ]
+        },
+        {
+          "id": "05_run_bc_snake_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "06_run_bc_ring_verify",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000"
+          ]
+        },
+        {
+          "id": "07_run_bc_snake_bidir_from_scratch_walk",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=snake",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        },
+        {
+          "id": "08_run_bc_ring_bidir_from_scratch_walk",
+          "mode": "run",
+          "args": [
+            "--controller.mode=bg",
+            "--topology=ring",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.evalWindow=mean",
+            "--phaseBC.learnWindow=mean",
+            "--phaseBC.settleWindow=tail",
+            "--phaseBC.excludeFirstK=0",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--proto-debug",
+            "--maxStepsPhaseC=50000",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        },
+        {
+          "id": "09_report",
+          "mode": "report",
+          "args": [
+            "--report.includeProbe=true",
+            "--report.includeRun=true",
+            "--report.probeTopK=40"
+          ]
+        },
+        {
+          "id": "10_trace_transitions",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=bg",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50"
+          ]
+        },
+        {
+          "id": "11_trace_transitions_bidir_from_scratch_walk",
+          "mode": "trace",
+          "args": [
+            "--controller.mode=bg",
+            "--phaseBC.physicsSource=megatune_best",
+            "--phaseBC.ttrans=40",
+            "--phaseBC.taillen=10",
+            "--debug.transitionTrace=true",
+            "--debug.traceTrials=50",
+            "--phaseD.enabled=false",
+            "--phaseE.enabled=true",
+            "--phaseE.initFrom=phaseA",
+            "--phaseE.opSchedule=uniform",
+            "--phaseE.transitionSource=randomWalk",
+            "--phaseE.walk.episodeLen=20",
+            "--phaseE.walk.episodesPerBatch=50",
+            "--phaseE.walk.resetStrategy=uniform",
+            "--phaseE.walk.bias=0.5",
+            "--phaseF.enabled=true",
+            "--phaseF.splitByOp=true",
+            "--phaseF.includeBoundaryMetrics=true",
+            "--phaseF.evalTransitionSource=pairs"
+          ]
+        }
+      ]
+    }
+  ]
+}
