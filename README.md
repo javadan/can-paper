@@ -11,4 +11,5 @@ attractor networks, including failure modes and topological effects.
 
 Status: preprint draft  
 Author: Daniel Brownell
+
 arxiv url: http://arxiv.org/abs/2601.15336
